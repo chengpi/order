@@ -9,22 +9,26 @@ Page({
     listData: [],
     activeIndex: 0,
     toView: 'a0',
-    scrollTop: 100,
-    screenWidth: 667,
+    scrollTop: 0,
+    // screenWidth: 667,
     showModalStatus: false,
     currentType: 0,
     currentIndex: 0,
+    waysIndex: 0,
     sizeIndex: 0,
-    sugarIndex: 0,
-    temIndex: 0,
-    sugar: ['常规糖', '无糖', '微糖', '半糖', '多糖'],
-    tem: ['常规冰', '多冰', '少冰', '去冰', '温', '热'],
-    size: ['常规', '珍珠', '西米露'],
+    // sugarIndex: 0,
+    // temIndex: 0,
+    // sugar: ['常规糖', '无糖', '微糖', '半糖', '多糖'],
+    // tem: ['常规冰', '多冰', '少冰', '去冰', '温', '热'],
+    ways: ['堂食', '打包'],
+    size: ['小份', '大份'],
     cartList: [],
     sumMonney: 0,
     cupNumber:0,
     showCart: false,
-    loading: false
+    loading: false,
+    scrollArr: [],
+    scrollArrLen: 0,
   },
 
   /**
@@ -32,8 +36,8 @@ Page({
    */
   onLoad: function (options) {
     var that = this;
-    var sysinfo = wx.getSystemInfoSync().windowHeight;
-    console.log(sysinfo)
+    // var sysinfo = wx.getSystemInfoSync().windowHeight;
+    // console.log(sysinfo)
     wx.showLoading({
       title: '努力加载中',
     })
@@ -46,73 +50,72 @@ Page({
         'Accept': 'application/json'
       },
       success: function (res) {
-        wx.hideLoading();
         console.log(res)
+        let scrollArr = [0]
+        //动态计算联动节点
+        for (let i = 0; i < res.data.data.length; i++) {
+          // console.log(res.data.data[i].foods.length)
+          scrollArr.push(scrollArr[i] + 73 * res.data.data[i].foods.length + 18)
+        }
         that.setData({
+          scrollArr: scrollArr,
+          scrollArrLen: scrollArr.length,
           listData: res.data.data,
           loading: true
         })
+        wx.hideLoading()
+      },
+      fail: function (err) {
+        wx.showToast({
+          icon: 'error',
+          title: '网络失败',
+        }, 3000)
+        wx.hideLoading()
       }
     })
   },
   selectMenu: function (e) {
+    var that = this
     var index = e.currentTarget.dataset.index
-    console.log(index)
-    this.setData({
+    // console.log(index)
+    that.setData({
       activeIndex: index,
       toView: 'a' + index,
-      // scrollTop: 1186
     })
-    console.log(this.data.toView);
+    // console.log(this.data.toView)
+    // console.log(this.data.scrollArr)
   },
   scroll: function (e) {
-    console.log(e)
     var dis = e.detail.scrollTop
-    if (dis > 0 && dis < 1189) {
-      this.setData({
-        activeIndex: 0,
-      })
+    var sysH = wx.getSystemInfoSync().windowHeight
+    let max = this.data.scrollArr[this.data.scrollArr.length - 1]
+    // console.log(sysH, dis, max)
+    for (let i = 0; i < this.data.scrollArr.length; i++) {
+      if (i < this.data.scrollArr.length - 1) {
+        if (dis >= this.data.scrollArr[i] && dis < this.data.scrollArr[i + 1]) {
+          // console.log(this.data.scrollArr[i], dis, this.data.scrollArr[i + 1], i)
+          // max - sysH + 55 == dis
+          if (max - sysH + 55 == dis) {
+            // console.log('dfg')
+            this.setData({
+              activeIndex: 6,
+            })
+          } else {
+            this.setData({
+              activeIndex: i,
+            })
+          }
+          break
+        }
+      } else {
+        this.setData({
+          activeIndex: 6,
+        })
+      }
     }
-    if (dis > 1189 && dis < 1867) {
-      this.setData({
-        activeIndex: 1,
-      })
-    }
-    if (dis > 1867 && dis < 2180) {
-      this.setData({
-        activeIndex: 2,
-      })
-    }
-    if (dis > 2180 && dis < 2785) {
-      this.setData({
-        activeIndex: 3,
-      })
-    }
-    if (dis > 2785 && dis < 2879) {
-      this.setData({
-        activeIndex: 4,
-      })
-    }
-    if (dis > 2879 && dis < 4287) {
-      this.setData({
-        activeIndex: 5,
-      })
-    }
-    if (dis > 4287 && dis < 4454) {
-      this.setData({
-        activeIndex: 6,
-      })
-    }
-    if (dis > 4454 && dis < 4986) {
-      this.setData({
-        activeIndex: 7,
-      })
-    }
-    if (dis > 4986) {
-      this.setData({
-        activeIndex: 8,
-      })
-    }
+  },
+  scrolltolower: function (e) {
+    // console.log(e)
   },
   /**
    * 生命周期函数--监听页面初次渲染完成
@@ -140,34 +143,40 @@ Page({
     }
     if (type == 1) {
       this.setData({
-        sugarIndex: index
+        waysIndex: index
       });
     }
-    if (type == 2) {
-      this.setData({
-        temIndex: index
-      });
-    }
+    // if (type == 1) {
+    //   this.setData({
+    //     sugarIndex: index
+    //   });
+    // }
+    // if (type == 2) {
+    //   this.setData({
+    //     temIndex: index
+    //   });
+    // }
   },
 
   addToCart: function () {
     var a = this.data
     var addItem = {
       "name": a.listData[a.currentType].foods[a.currentIndex].name,
-      "price": a.listData[a.currentType].foods[a.currentIndex].specfoods[0].price,
-      "detail": a.size[a.sizeIndex] + "+" + a.sugar[a.sugarIndex] + "+" + a.tem[a.temIndex],
+      "price": a.listData[a.currentType].foods[a.currentIndex].price,
+      // "detail": a.size[a.sizeIndex] + "+" + a.sugar[a.sugarIndex] + "+" + a.tem[a.temIndex],
+      "detail": a.size[a.sizeIndex] + "+" + a.ways[a.waysIndex],
       "number": 1,
-      "sum": a.listData[a.currentType].foods[a.currentIndex].specfoods[0].price,
+      "sum": a.listData[a.currentType].foods[a.currentIndex].price,
     }
-    var sumMonney = a.sumMonney + a.listData[a.currentType].foods[a.currentIndex].specfoods[0].price;
-    var cartList = this.data.cartList;
-    cartList.push(addItem);
+    var sumMonney = a.sumMonney + a.listData[a.currentType].foods[a.currentIndex].price
+    var cartList = this.data.cartList
+    cartList.push(addItem)
     this.setData({
       cartList: cartList,
       showModalStatus: false,
       sumMonney: sumMonney,
       cupNumber: a.cupNumber + 1
-    });
+    })
     console.log(this.data.cartList)
   },
   showCartList: function () {
@@ -175,9 +184,8 @@ Page({
     if (this.data.cartList.length != 0) {
       this.setData({
         showCart: !this.data.showCart,
-      });
+      })
     }
-
   },
   clearCartList: function () {
     this.setData({
@@ -187,27 +195,27 @@ Page({
     });
   },
   addNumber: function (e) {
-    var index = e.currentTarget.dataset.index;
+    var index = e.currentTarget.dataset.index
     console.log(index)
-    var cartList = this.data.cartList;
+    var cartList = this.data.cartList
     cartList[index].number++;
-    var sum = this.data.sumMonney + cartList[index].price;
-    cartList[index].sum += cartList[index].price;
+    var sum = this.data.sumMonney + cartList[index].price
+    cartList[index].sum += cartList[index].price
 
     this.setData({
       cartList: cartList,
       sumMonney: sum,
-      cupNumber: this.data.cupNumber+1
+      cupNumber: this.data.cupNumber + 1
     });
   },
   decNumber: function (e) {
-    var index = e.currentTarget.dataset.index;
+    var index = e.currentTarget.dataset.index
     console.log(index)
-    var cartList = this.data.cartList;
+    var cartList = this.data.cartList
 
-    var sum = this.data.sumMonney - cartList[index].price;
-    cartList[index].sum -= cartList[index].price;
-    cartList[index].number == 1 ? cartList.splice(index, 1) : cartList[index].number--;
+    var sum = this.data.sumMonney - cartList[index].price
+    cartList[index].sum -= cartList[index].price
+    cartList[index].number == 1 ? cartList.splice(index, 1) : cartList[index].number--
     this.setData({
       cartList: cartList,
       sumMonney: sum,
@@ -217,9 +225,9 @@ Page({
   },
   goBalance: function () {
     if (this.data.sumMonney != 0) {
-      wx.setStorageSync('cartList', this.data.cartList);
-      wx.setStorageSync('sumMonney', this.data.sumMonney);
-      wx.setStorageSync('cupNumber', this.data.cupNumber);
+      wx.setStorageSync('cartList', this.data.cartList)
+      wx.setStorageSync('sumMonney', this.data.sumMonney)
+      wx.setStorageSync('cupNumber', this.data.cupNumber)
       wx.navigateTo({
         url: '../order/balance/balance'
       })

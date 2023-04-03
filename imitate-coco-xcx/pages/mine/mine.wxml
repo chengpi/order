@@ -17,9 +17,9 @@
       </view>
   </view>
 </view>
-<view class="go-center" style='margin-top:80px;font-size:14px;color:blue;' bindtap='bitphone'>
+<!-- <view class="go-center" style='margin-top:80px;font-size:14px;color:blue;' bindtap='bitphone'>
     <label style='border-bottom:1px solid blue'>客服电话：123-456-7890</label>
 </view>
 <view class='go-center' style='margin-top:10px'>
   <label style='font-size:12px;color:#E2E2E2'>[服务时间 周一至周五 9:00-19:00]</label>
-</view>
+</view> -->

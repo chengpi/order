@@ -1,0 +1,14 @@
+{
+  "name": "order",
+  "version": "1.0.0",
+  "description": "仿coco点餐系统的微信小程序  [新项目地址](https://github.com/lpbird/xcx-single-shop.git)  新项目 单店版全栈小程序 <br>  1 修复小程序端若干已知bug <br>  2 增加nodejs后端<br>  3 增加支付 退款 打印 后台管理等功能<br>",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@vant/weapp": "^1.10.14"
+  }
+}
